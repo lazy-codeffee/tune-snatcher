@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tube3</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Tailwind CSS -->
+     <style>
+:root {
+    --primary-color: #1e90ff; /* More Vibrant Blue */
+    --secondary-color: #2ecc71; /* Stronger Green */
+    --accent-color: #9b59b6; /* Deep Purple */
+    --tertiary-color: #ff69b4; /* Hot Pink */
+}
+.dark {
+    --primary-color: #00bfff;
+    --secondary-color: #27ae60;
+    --accent-color: #8e44ad;
+    --tertiary-color: #ff1493;
+}
+
+
+     </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        };
+    </script>
+    
+    <script>
+        function loadTheme() {
+            const theme = localStorage.getItem("theme") || "light";
+            const html = document.documentElement;
+            if (theme === "dark") {
+                html.classList.add("dark");
+            } else {
+                html.classList.remove("dark");
+            }
+        }
+        document.addEventListener("DOMContentLoaded", loadTheme);
+    </script>
+</head>
+<body class="relative bg-white text-black dark:bg-gray-900 dark:text-white transition-colors duration-300 flex flex-col min-h-screen items-center justify-center">
+
+    <!-- Background Overlay with Abstract Lines -->
+    <!-- Abstract Background with Colors -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <svg class="absolute inset-0 w-full h-full opacity-25 dark:opacity-30" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <!-- Soft Spiral Stroke -->
+            <path d="M10 90 C 30 60, 50 80, 70 50 S 90 10, 95 20"
+                stroke="var(--primary-color)" stroke-width="1.5" fill="none" opacity="0.8"/>
+            <!-- Wavy Line -->
+            <path d="M5 20 Q 15 10, 25 20 T 45 20 T 65 20 T 85 20"
+                stroke="var(--secondary-color)" stroke-width="1" fill="none" opacity="0.6"/>
+            <!-- Abstract Marks -->
+            <path d="M20 80 l5 -5 m5 5 l5 -5 m5 5 l5 -5 m5 5"
+                stroke="var(--accent-color)" stroke-width="1" fill="none" opacity="0.5"/>
+            <path d="M70 15 l5 -5 m5 5 l5 -5 m5 5 l5 -5 m5 5"
+                stroke="var(--tertiary-color)" stroke-width="1" fill="none" opacity="0.5"/>
+        </svg>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <div class="absolute top-4 right-4">
+        <button onclick="toggleDarkMode()" id="darkModeToggle"
+            class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center shadow-lg transition">
+            <svg id="sun-icon" class="w-6 h-6 text-yellow-400 hidden" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 15a5 5 0 110-10 5 5 0 010 10zM10 0a1 1 0 011 1v2a1 1 0 11-2 0V1a1 1 0 011-1zm0 16a1 1 0 011 1v2a1 1 0 11-2 0v-2a1 1 0 011-1z"></path>
+            </svg>
+            <svg id="moon-icon" class="w-6 h-6 text-gray-800 dark:text-gray-200" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293a8 8 0 01-10.586-10.586 1 1 0 00-1.32-1.32 10 10 0 1012.914 12.914 1 1 0 00-1.32-1.32z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Main UI -->
+    <div class="flex-grow flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg drop-shadow-[0px_0px_10px_rgba(0,0,0,0.1)] w-full max-w-lg transition-colors">
+            <!-- Logo at the center above the UI -->
+            <div class="flex justify-center items-center mb-6">
+                <img src="{{ url_for('static', filename='images/front-logo.png') }}" alt="App Logo" class="w-48 h-48">
+            </div>
+            <h1 class="text-2xl font-bold text-center mb-4">YouTube to Audio Converter</h1>
+
+            <input id="videoUrl" type="text" placeholder="Enter YouTube URL"
+                class="w-full p-2 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+            <label class="block text-sm mt-4">Select Quality:</label>
+            <select id="quality" class="w-full p-2 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="0">Highest Available</option>
+                <option value="320">320 Kbps</option>
+                <option value="256">256 Kbps</option>
+                <option value="192" selected>192 Kbps (Default)</option>
+                <option value="128">128 Kbps</option>
+                <option value="64">64 Kbps</option>
+            </select>
+
+            <label class="block text-sm mt-4">Select Format:</label>
+            <select id="format" class="w-full p-2 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="mp3">MP3</option>
+                <option value="wav">WAV</option>
+            </select>
+
+            <button onclick="downloadAudio()" 
+                class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition">
+                Convert
+            </button>
+
+            <div id="status" class="text-center mt-4 text-sm flex flex-col items-center"></div>
+        </div>
+    </div>
+
+    <!-- Footer-->
+    <footer class="text-center text-gray-600 dark:text-gray-400 text-sm py-2">
+        <p>&copy; <span id="year"></span> Tube3. All rights reserved.</p>
+        <p>Built by <a href="https://github.com/lazy-codeffee" target="_blank" class="text-blue-500 hover:underline">Donneric Quinque</a></p>
+    </footer>
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+    <script>
+        async function downloadAudio() {
+            const videoUrl = document.getElementById("videoUrl");
+            const quality = document.getElementById("quality");
+            const format = document.getElementById("format");
+            const status = document.getElementById("status");
+
+            if (!videoUrl.value) {
+                status.innerHTML = `<span class="text-red-400">Please enter a valid URL.</span>`;
+                return;
+            }
+
+            let seconds = 0;
+            let timerInterval;
+
+            function startTimer() {
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    document.getElementById("timer").innerText = `Time elapsed: ${seconds}s`;
+                }, 1000);
+            }
+
+            status.innerHTML = `
+                <div class="flex flex-col items-center space-y-2 text-blue-500">
+                    <div class="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
+                    <span>Processing...</span>
+                    <span id="timer" class="text-gray-400 text-sm">Time elapsed: 0s</span>
+                </div>
+            `;
+
+            startTimer(); 
+
+            try {
+                const response = await fetch("/download", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        url: videoUrl.value, 
+                        quality: quality.value, 
+                        format: format.value 
+                    })
+                });
+
+                clearInterval(timerInterval); 
+                const data = await response.json();
+                
+                if (data.download_url) {
+                    status.innerHTML = `
+                        <a href="${data.download_url}" 
+                        class="mt-4 inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition text-center">
+                            Download ${format.value.toUpperCase()}
+                        </a>
+                        <button onclick="resetForm()" 
+                                class="mt-2 inline-block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition text-center">
+                            Convert Another
+                        </button>
+                        <p class="text-gray-400 text-sm mt-2">Processing time: ${seconds}s</p>
+                    `;
+                } else {
+                    status.innerHTML = `<span class="text-red-400">Error: ${data.error || "Something went wrong"}</span>`;
+                }
+            } catch (error) {
+                clearInterval(timerInterval);
+                status.innerHTML = `<span class="text-red-400">Error: ${error.message}</span>`;
+            }
+        }
+
+        function resetForm() {
+            document.getElementById("videoUrl").value = "";
+            document.getElementById("quality").value = "192";
+            document.getElementById("format").value = "mp3";
+            document.getElementById("status").innerHTML = "";
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const sunIcon = document.getElementById("sun-icon");
+            const moonIcon = document.getElementById("moon-icon");
+
+            if (html.classList.contains("dark")) {
+                html.classList.remove("dark");
+                localStorage.setItem("theme", "light");
+                sunIcon.classList.add("hidden");
+                moonIcon.classList.remove("hidden");
+            } else {
+                html.classList.add("dark");
+                localStorage.setItem("theme", "dark");
+                sunIcon.classList.remove("hidden");
+                moonIcon.classList.add("hidden");
+            }
+        }
+    </script>
+
+</body>
+</html>
